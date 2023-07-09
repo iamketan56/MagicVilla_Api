@@ -8,6 +8,10 @@ namespace MaggicVilaAPI.Models.Dto
         [Required]
         [MaxLength(30)]
         public String Name { get; set; }
+
+        public int Occupancy {get; set; }
+
+        public int SqFt { get; set; } 
      
 
     }
