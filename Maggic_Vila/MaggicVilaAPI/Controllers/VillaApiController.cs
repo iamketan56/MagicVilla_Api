@@ -4,6 +4,7 @@ using MaggicVilaAPI.Models.Dto;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
 
 namespace MaggicVilaAPI.Controllers
 {
@@ -11,10 +12,18 @@ namespace MaggicVilaAPI.Controllers
     [ApiController]
     public class VillaApiController : ControllerBase
     {
+        private readonly ILogger<VillaApiController> _logger;
+        public VillaApiController(ILogger<VillaApiController> logger)
+        {
+            _logger = logger;
+        }
+
+
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<VillaDto>> GetVillas()
         {
+            _logger.LogInformation("Getting All Villas");
             return Ok(VillaStore.villaList);
         }
 
@@ -26,6 +35,7 @@ namespace MaggicVilaAPI.Controllers
         {
             if (Id == 0)
             {
+                _logger.LogError("Get Villa Error with Id" + Id);
                 return BadRequest();
             }
 
