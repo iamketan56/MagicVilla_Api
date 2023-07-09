@@ -35,6 +35,25 @@ namespace MaggicVilaAPI.Controllers
             }
             return Ok(villa);
         }
+
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<VillaDto> CreateVilla([FromBody]VillaDto villadto)
+        {
+            if(villadto == null)
+            {
+                return BadRequest(villadto);
+            }
+            if(villadto.Id > 0)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            villadto.Id = VillaStore.villaList.OrderByDescending(u => u.Id).FirstOrDefault().Id + 1;
+            VillaStore.villaList.Add(villadto);
+
+            return Ok(villadto);
+        }
         
     }
 }
