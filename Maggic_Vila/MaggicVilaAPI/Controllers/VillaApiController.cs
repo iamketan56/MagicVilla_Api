@@ -64,6 +64,25 @@ namespace MaggicVilaAPI.Controllers
 
             return Ok(villadto);
         }
+
+        [HttpDelete("id")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult DeleteVilla(int id)
+        {
+            if (id == 0)
+            {
+                return BadRequest();
+            }
+            var villaToDelete = VillaStore.villaList.FirstOrDefault(u => u.Id == id);
+            if (villaToDelete == null)
+            {
+                return NotFound();
+            }
+            VillaStore.villaList.Remove(villaToDelete);
+            return NoContent();
+        }
         
     }
 }
