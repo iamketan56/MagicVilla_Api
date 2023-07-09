@@ -2,6 +2,7 @@
 using MaggicVilaAPI.Models;
 using MaggicVilaAPI.Models.Dto;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace MaggicVilaAPI.Controllers
 {
@@ -41,6 +42,15 @@ namespace MaggicVilaAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<VillaDto> CreateVilla([FromBody]VillaDto villadto)
         {
+            //if(!ModelState.IsValid)
+            //{
+            //    return BadRequest();
+            //}
+            if (VillaStore.villaList.FirstOrDefault(u => u.Name.ToLower() == villadto.Name.ToLower()) != null)
+            {
+                ModelState.AddModelError("CustomError", "Villa already Exist");
+                return BadRequest(ModelState);
+            }
             if(villadto == null)
             {
                 return BadRequest(villadto);
