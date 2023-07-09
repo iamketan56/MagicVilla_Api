@@ -10,16 +10,31 @@ namespace MaggicVilaAPI.Controllers
     public class VillaApiController : ControllerBase
     {
         [HttpGet]
-        public IEnumerable<VillaDto> GetVillas()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<VillaDto>> GetVillas()
         {
-            return VillaStore.villaList;
+            return Ok(VillaStore.villaList);
         }
 
         [HttpGet("id")]
-        public VillaDto GetVillas(int Id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult<VillaDto> GetVillas(int Id)
         {
-            return VillaStore.villaList.FirstOrDefault(u=>u.Id == Id);
-        }
+            if(Id==0)
+            {
+                return BadRequest();
+            }
 
+            var villa = VillaStore.villaList.FirstOrDefault(u => u.Id == Id);
+
+            if(villa==null)
+            {
+                return NotFound();
+            }
+            return Ok(villa);
+        }
+        
     }
 }
