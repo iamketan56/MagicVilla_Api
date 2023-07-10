@@ -1,6 +1,8 @@
-﻿using MaggicVilaAPI.Data;
+﻿using AutoMapper;
+using MaggicVilaAPI.Data;
 using MaggicVilaAPI.Models;
 using MaggicVilaAPI.Models.Dto;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -16,17 +18,19 @@ namespace MaggicVilaAPI.Controllers
        // private readonly ILogger<VillaApiController> _logger;
 
         private readonly ApplicationDbContext _Db;
-    
-        public VillaApiController(ApplicationDbContext db)
+        private readonly IMapper _mapper;
+        public VillaApiController(ApplicationDbContext db,IMapper mapper)
         {
             _Db = db;
+            _mapper = mapper;
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<VillaDto>>> GetVillas()
         {
+            IEnumerable<Villa> villaList = await _Db.Villas.ToListAsync();
             //_logger.LogInformation("Getting All Villas");
-            return Ok(await _Db.Villas.ToListAsync());
+            return Ok(_mapper.Map<List<VillaDto>>(villaList));
         }
 
         [HttpGet("id")]
@@ -47,44 +51,28 @@ namespace MaggicVilaAPI.Controllers
             {
                 return NotFound();
             }
-            return Ok(villa);
+            return Ok(_mapper.Map<VillaDto>(villa));
         }
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<VillaDto>> CreateVilla([FromBody] VillaCreatedDto villadto)
+        public async Task<ActionResult<VillaDto>> CreateVilla([FromBody] VillaCreatedDto CreateDto)
         {
-            //if(!ModelState.IsValid)
-            //{
-            //    return BadRequest();
-            //}
-            if (await _Db.Villas.FirstOrDefaultAsync(u => u.Name.ToLower() == villadto.Name.ToLower()) != null)
+           
+            if (await _Db.Villas.FirstOrDefaultAsync(u => u.Name.ToLower() == CreateDto.Name.ToLower()) != null)
             {
                 ModelState.AddModelError("CustomError", "Villa already Exist");
                 return BadRequest(ModelState);
             }
-            if (villadto == null)
+            if (CreateDto == null)
             {
-                return BadRequest(villadto);
+                return BadRequest(CreateDto);
             }
-            //if (villadto.Id > 0)
-            //{
-            //    return StatusCode(StatusCodes.Status500InternalServerError);
-            //}
-            Villa model = new()
-            {
-                Amenity = villadto.Amenity,
-                Details = villadto.Details,
-                ImgUrl = villadto.ImgUrl,
-                Name = villadto.Name,
-                Occupency = villadto.Occupancy,
-                rate = villadto.rate,
-                Sqft = villadto.SqFt,
-                CreatedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now
-            };
-           await _Db.Villas.AddAsync(model);
+       
+            Villa model = _mapper.Map<Villa>(CreateDto);
+
+            await _Db.Villas.AddAsync(model);
            await _Db.SaveChangesAsync();
 
             return Ok(model);
@@ -119,17 +107,8 @@ namespace MaggicVilaAPI.Controllers
             {
                 return BadRequest();
             }
-            Villa model = new()
-            {
-                Amenity = VillaToUpdate.Amenity,
-                Details = VillaToUpdate.Details,
-                Id = VillaToUpdate.Id,
-                ImgUrl = VillaToUpdate.ImgUrl,
-                Name = VillaToUpdate.Name,
-                Occupency = VillaToUpdate.Occupancy,
-                rate = VillaToUpdate.rate,
-                Sqft = VillaToUpdate.SqFt         
-            };
+            Villa model = _mapper.Map<Villa>(VillaToUpdate);
+           
             _Db.Villas.Update(model);
             await _Db.SaveChangesAsync();
             return NoContent();
@@ -145,33 +124,15 @@ namespace MaggicVilaAPI.Controllers
                 return BadRequest();
             }
             var villa = await _Db.Villas.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
-            VillaUpdateDto villadto = new()
-            {
-                Amenity = villa.Amenity,
-                Details = villa.Details,
-                Id = villa.Id,
-                ImgUrl = villa.ImgUrl,
-                Name = villa.Name,
-                Occupancy = villa.Occupency,
-                rate = villa.rate,
-                SqFt = villa.Sqft
-            };
+            VillaUpdateDto villadto = _mapper.Map<VillaUpdateDto>(villa);
+            
             if (villa == null)
             {
                 return BadRequest();
             }
             PatchDto.ApplyTo(villadto, ModelState) ;
-            Villa model = new()
-            {
-                Amenity = villadto.Amenity,
-                Details = villadto.Details,
-                Id = villadto.Id,
-                ImgUrl = villadto.ImgUrl,
-                Name = villadto.Name,
-                Occupency = villadto.Occupancy,
-                rate = villadto.rate,
-                Sqft = villadto.SqFt
-            };
+            Villa model = _mapper.Map<Villa>(villadto); 
+
             _Db.Villas.Update(model);
             await _Db.SaveChangesAsync();
 
