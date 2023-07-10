@@ -7,63 +7,21 @@ using System.Linq.Expressions;
 
 namespace MaggicVilaAPI.Repository
 {
-    public class VillaRepository : IVillaRepository
+    public class VillaRepository :  Repository<Villa>, IVillaRepository
     {
-        private readonly ApplicationDbContext _Db;
-        public VillaRepository(ApplicationDbContext db)
+        private ApplicationDbContext _Db;
+        
+        public VillaRepository(ApplicationDbContext Db) : base(Db)
+         {
+              _Db = Db;
+           }
+
+        public async Task<Villa> UpdateAsync(Villa entity)
         {
-            _Db = db;
-        }
-        public async Task CreateAsync(Villa entity)
-        {
-           await _Db.Villas.AddAsync(entity);
-            await SaveAsync();
-        }
-
-        public async Task<Villa> GetAsync(Expression<Func<Villa, bool>> filter = null, bool tracked = true)
-        {
-            IQueryable<Villa> query = _Db.Villas;
-            if(!tracked)
-            {
-                query = query.AsNoTracking();
-            }
-            if (filter != null)
-            {
-                query = query.Where(filter);
-            }
-            return await query.FirstOrDefaultAsync();
-        }
-
-        public async Task<List<Villa>> GetAllAsync(Expression<Func<Villa, bool>> filter = null)
-        {
-            IQueryable<Villa> query = _Db.Villas;
-            if (filter != null)
-            {
-                query = query.Where(filter);
-            }
-            return await query.ToListAsync();
-        }
-
-     
-
-        public async Task RemoveAsync(Villa entity)
-        {
-            _Db.Villas.Remove(entity);
-            await SaveAsync();
-        }
-
-
-        public async Task SaveAsync()
-        {
-            await _Db.SaveChangesAsync();
-        }
-
-       
-
-        public async Task UpdateAsync(Villa entity)
-        {
+            entity.UpdatedDate = DateTime.UtcNow;
             _Db.Villas.Update(entity);
-            await SaveAsync();
+            await _Db.SaveChangesAsync();
+            return entity;
         }
     }
 }
