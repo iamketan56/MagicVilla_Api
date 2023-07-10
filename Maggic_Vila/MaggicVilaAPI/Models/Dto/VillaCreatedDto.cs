@@ -3,7 +3,10 @@
 namespace MaggicVilaAPI.Models.Dto
 {
     public class VillaCreatedDto
-    {   
+    {
+        internal DateTime CreatedDate;
+        internal DateTime UpdatedDate;
+
         [Required]
         [MaxLength(30)]
         public String Name { get; set; }

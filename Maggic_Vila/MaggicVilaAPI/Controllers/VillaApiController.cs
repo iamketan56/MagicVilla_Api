@@ -23,17 +23,17 @@ namespace MaggicVilaAPI.Controllers
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<VillaDto>> GetVillas()
+        public async Task<ActionResult<IEnumerable<VillaDto>>> GetVillas()
         {
             //_logger.LogInformation("Getting All Villas");
-            return Ok(_Db.Villas.ToList());
+            return Ok(await _Db.Villas.ToListAsync());
         }
 
         [HttpGet("id")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<VillaDto> GetVillas(int Id)
+        public async Task<ActionResult<VillaDto>> GetVillas(int Id)
         {
             if (Id == 0)
             {
@@ -41,7 +41,7 @@ namespace MaggicVilaAPI.Controllers
                 return BadRequest();
             }
 
-            var villa = _Db.Villas.FirstOrDefault(u => u.Id == Id);
+            var villa = await _Db.Villas.FirstOrDefaultAsync(u => u.Id == Id);
 
             if (villa == null)
             {
@@ -53,13 +53,13 @@ namespace MaggicVilaAPI.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<VillaDto> CreateVilla([FromBody] VillaCreatedDto villadto)
+        public async Task<ActionResult<VillaDto>> CreateVilla([FromBody] VillaCreatedDto villadto)
         {
             //if(!ModelState.IsValid)
             //{
             //    return BadRequest();
             //}
-            if (_Db.Villas.FirstOrDefault(u => u.Name.ToLower() == villadto.Name.ToLower()) != null)
+            if (await _Db.Villas.FirstOrDefaultAsync(u => u.Name.ToLower() == villadto.Name.ToLower()) != null)
             {
                 ModelState.AddModelError("CustomError", "Villa already Exist");
                 return BadRequest(ModelState);
@@ -84,8 +84,8 @@ namespace MaggicVilaAPI.Controllers
                 CreatedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now
             };
-            _Db.Villas.Add(model);
-            _Db.SaveChanges();
+           await _Db.Villas.AddAsync(model);
+           await _Db.SaveChangesAsync();
 
             return Ok(model);
         }
@@ -94,26 +94,26 @@ namespace MaggicVilaAPI.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult DeleteVilla(int id)
+        public async Task<IActionResult> DeleteVilla(int id)
         {
             if (id == 0)
             {
                 return BadRequest();
             }
-            var villaToDelete = _Db.Villas.FirstOrDefault(u => u.Id == id);
+            var villaToDelete =await _Db.Villas.FirstOrDefaultAsync(u => u.Id == id);
             if (villaToDelete == null)
             {
                 return NotFound();
             }
-            _Db.Villas.Remove(villaToDelete);
-            _Db.SaveChanges();
+             _Db.Villas.Remove(villaToDelete);
+            await _Db.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpPut("id")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdateVilla(int id, [FromBody] VillaUpdateDto VillaToUpdate)
+        public async Task<IActionResult> UpdateVilla(int id, [FromBody] VillaUpdateDto VillaToUpdate)
         {
             if (VillaToUpdate == null || id != VillaToUpdate.Id)
             {
@@ -131,20 +131,20 @@ namespace MaggicVilaAPI.Controllers
                 Sqft = VillaToUpdate.SqFt         
             };
             _Db.Villas.Update(model);
-            _Db.SaveChanges();
+            await _Db.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpPatch]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdateVillaField(int id, JsonPatchDocument<VillaUpdateDto> PatchDto)
+        public async Task<IActionResult> UpdateVillaField(int id, JsonPatchDocument<VillaUpdateDto> PatchDto)
         {
             if (PatchDto == null || id == 0)
             {
                 return BadRequest();
             }
-            var villa = _Db.Villas.AsNoTracking().FirstOrDefault(u => u.Id == id);
+            var villa = await _Db.Villas.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
             VillaUpdateDto villadto = new()
             {
                 Amenity = villa.Amenity,
@@ -173,7 +173,7 @@ namespace MaggicVilaAPI.Controllers
                 Sqft = villadto.SqFt
             };
             _Db.Villas.Update(model);
-            _Db.SaveChanges();
+            await _Db.SaveChangesAsync();
 
             if (!ModelState.IsValid)
             {
