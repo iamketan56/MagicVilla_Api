@@ -11,6 +11,8 @@ namespace MaggicVilaAPI.Data
         //table name Villas
         public DbSet<Villa> Villas { get; set; }
 
+        public DbSet<VillaNumber> VillasNumber { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Villa>().HasData(
@@ -63,5 +65,6 @@ namespace MaggicVilaAPI.Data
                        CreatedDate = DateTime.Now
                    }) ;
         }
+
     }
 }
