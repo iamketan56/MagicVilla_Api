@@ -19,12 +19,15 @@ namespace MaggicVilaAPI.Controllers
         // private readonly ILogger<VillaApiController> _logger;
         protected ApiResponse _response;
         private readonly IVillaNumebrRepository _DbVillaNumber;
+
+        private readonly IVillaRepository _DbVilla;
         private readonly IMapper _mapper;
-        public VillaNumberApiController(IVillaNumebrRepository dbVillaNumber,IMapper mapper)
+        public VillaNumberApiController(IVillaNumebrRepository dbVillaNumber,IMapper mapper, IVillaRepository dbVilla)
         {
             _DbVillaNumber = dbVillaNumber;
             _mapper = mapper;
             this._response = new();
+            _DbVilla = dbVilla;
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -93,6 +96,12 @@ namespace MaggicVilaAPI.Controllers
                 {
                     return BadRequest(CreateVillaDto);
                 }
+                if(await _DbVilla.GetAsync(u=>u.Id==CreateVillaDto.VillaId)==null)
+                {
+
+                    ModelState.AddModelError("CustomError", "Villa Id is Invalid");
+                    return BadRequest(ModelState);
+                }
 
                 VillaNumber villa = _mapper.Map<VillaNumber>(CreateVillaDto);
 
@@ -155,7 +164,13 @@ namespace MaggicVilaAPI.Controllers
             {
                 return BadRequest();
             }
-            VillaNumber model = _mapper.Map<VillaNumber>(VillaToUpdate);
+                if (await _DbVilla.GetAsync(u => u.Id == VillaToUpdate.VillaId) == null)
+                {
+
+                    ModelState.AddModelError("CustomError", "Villa Id is Invalid");
+                    return BadRequest(ModelState);
+                }
+                VillaNumber model = _mapper.Map<VillaNumber>(VillaToUpdate);
            
            await _DbVillaNumber.UpdateAsync(model);
             await _DbVillaNumber.SaveAsync();
